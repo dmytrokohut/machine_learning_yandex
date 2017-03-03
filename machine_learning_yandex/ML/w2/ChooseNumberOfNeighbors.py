@@ -1,0 +1,52 @@
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+from sklearn.preprocessing import scale
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.neighbors import KNeighborsClassifier
+
+# Загрузите выборку Wine по адресу https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data (файл также приложен к этому заданию)
+data = pd.read_csv('wine.data', index_col=None, header=None)
+
+"""Извлеките из данных признаки и классы. Класс записан в первом столбце (три варианта), признаки — в столбцах со второго по последний.
+   Более подробно о сути признаков можно прочитать по адресу https://archive.ics.uci.edu/ml/datasets/Wine (см. также файл wine.names, приложенный к заданию)"""
+classes = data[0]
+data = data.ix[:,1:]
+
+"""Оценку качества необходимо провести методом кросс-валидации по 5 блокам (5-fold). Создайте генератор разбиений, который перемешивает выборку перед формированием блоков 
+   (shuffle=True). Для воспроизводимости результата, создавайте генератор KFold с фиксированным параметром random_state=42.
+   В качестве меры качества используйте долю верных ответов (accuracy)."""
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+"""Найдите точность классификации на кросс-валидации для метода k ближайших соседей (sklearn.neighbors.KNeighborsClassifier), при k от 1 до 50.
+   При каком k получилось оптимальное качество? Чему оно равно (число в интервале от 0 до 1)? Данные результаты и будут ответами на вопросы 1 и 2."""
+cv_accuracy = [cross_val_score(estimator=KNeighborsClassifier(n_neighbors=k), X=data, y=classes, scoring='accuracy', cv=kf).mean() for k in range(1, 51)]
+
+task_2 = max(cv_accuracy)
+task_1 = cv_accuracy.index(task_2)+1
+print "k: ",task_1,"\tresult: ",task_2
+
+file_1 = open("task_1.txt", "w")
+file_1.write(repr(task_1))
+file_1.close()
+
+file_2 = open("task_2.txt", "w")
+file_2.write(repr(round(task_2, 2)))
+file_2.close()
+
+# Произведите масштабирование признаков с помощью функции sklearn.preprocessing.scale. Снова найдите оптимальное k на кросс-валидации.
+new_data = scale(data)
+
+scaled_cv_accuracy = [cross_val_score(estimator=KNeighborsClassifier(n_neighbors=k), X=new_data, y=classes, scoring='accuracy', cv=kf).mean() for k in range(1, 51)]
+
+task_4 = max(scaled_cv_accuracy)
+task_3 = scaled_cv_accuracy.index(task_4)+1
+print "k: ",task_3,"\tresult: ",task_4
+
+file_3 = open("task_3.txt", "w")
+file_3.write(repr(task_3))
+file_3.close()
+
+file_4 = open("task_4.txt", "w")
+file_4.write(repr(round(task_4, 2)))
+file_4.close()
